@@ -12,16 +12,7 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 /**
- * Select features based on Cuckoo Search algorithm with binary transfer functions, KNN classifier and 10-fold cross validation
- * <p>
- * see:
- * <pre>
- * Xin-She Yang and Suash Deb.
- * "Cuckoo Search via L´evy Flights", 2010.
- *
- * L. A. M. Pereira et al.
- * "A Binary Cuckoo Search and its Application for Feature Selection", 2014.
- * </pre>
+ * The main class of CS optimizer
  */
 public  final class CuckooSearchOptimizer implements FeatureSelector<Label> {
     private final TransferFunction transferFunction;

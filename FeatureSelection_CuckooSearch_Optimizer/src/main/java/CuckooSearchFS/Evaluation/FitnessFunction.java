@@ -101,8 +101,9 @@ public class FitnessFunction {
         try (Scanner originalData = new Scanner(new File(dataPath))) {
             originalData.nextLine();
             List<String> listOfRows = new ArrayList<>();
-            while (originalData.hasNext()) {listOfRows.add(originalData.nextLine());}
-
+            while (originalData.hasNext()) {
+                listOfRows.add(originalData.nextLine());
+            }
             matrix = new double[listOfRows.size()][listOfRows.get(0).split(",").length - 1];
             for (int i = 0; i < listOfRows.size() - 1; i++) {
                 String[] breakLine = listOfRows.get(i).split(",");

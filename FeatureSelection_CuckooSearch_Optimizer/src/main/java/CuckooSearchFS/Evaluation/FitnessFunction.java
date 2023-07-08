@@ -59,11 +59,12 @@ public class FitnessFunction {
         KNNTrainer<Label> KnnTrainer =  new KNNTrainer<Label>(1, new L1Distance(), Runtime.getRuntime().availableProcessors(), new VotingCombiner(), KNNModel.Backend.THREADPOOL, NeighboursQueryFactoryType.BRUTE_FORCE);
         CrossValidation<Label, LabelEvaluation> crossValidation = new CrossValidation<>(KnnTrainer, selectedFeatureDataset, new LabelEvaluator(), 10);
         double avgAccuracy = 0D;
-        for (Pair<LabelEvaluation, Model<Label>> ACC : crossValidation.evaluate())
+        for (Pair<LabelEvaluation, Model<Label>> ACC : crossValidation.evaluate()) {
             avgAccuracy += ACC.getA().accuracy();
+        }
         avgAccuracy /= crossValidation.getK();
         double correlation = 0;
-        if (matrix != null) correlation = getCorrelation(correlation_id, solution);
+        if (matrix != null) {correlation = getCorrelation(correlation_id, solution);}
 
         return avgAccuracy + 0.001 * (1 - ((double) selectedFeatureDataset.getSelectedFeatures().size() / Fmap.size()) - correlation);
     }
@@ -79,11 +80,12 @@ public class FitnessFunction {
     public <T extends FeatureSelector<Label>> SelectedFeatureSet getSFS(T optimizer, Dataset<Label> dataset, ImmutableFeatureMap Fmap, int... solution) {
         List<String> names = new ArrayList<>();
         List<Double> scores = new ArrayList<>();
-        for (int i = 0; i < solution.length; i++)
+        for (int i = 0; i < solution.length; i++) {
             if (solution[i] == 1) {
                 names.add(Fmap.get(i).getName());
                 scores.add(1D);
-            }
+            } 
+        }
         FeatureSetProvenance provenance = new FeatureSetProvenance(SelectedFeatureSet.class.getName(), dataset.getProvenance(), optimizer.getProvenance());
 
         return new SelectedFeatureSet(names, scores, optimizer.isOrdered(), provenance);
@@ -99,13 +101,14 @@ public class FitnessFunction {
         try (Scanner originalData = new Scanner(new File(dataPath))) {
             originalData.nextLine();
             List<String> listOfRows = new ArrayList<>();
-            while (originalData.hasNext()) listOfRows.add(originalData.nextLine());
+            while (originalData.hasNext()) {listOfRows.add(originalData.nextLine());}
 
             matrix = new double[listOfRows.size()][listOfRows.get(0).split(",").length - 1];
             for (int i = 0; i < listOfRows.size() - 1; i++) {
                 String[] breakLine = listOfRows.get(i).split(",");
-                for (int ii = 0; ii < breakLine.length - 1; ii++)
+                for (int ii = 0; ii < breakLine.length - 1; ii++) {
                     matrix[i][ii] = Double.parseDouble(breakLine[ii]);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -121,15 +124,17 @@ public class FitnessFunction {
      */
     private double getCorrelation(Correlation_Id correlation_id, int... solution) {
         List<Integer> indecies = new ArrayList<>();
-        for (int index = 0; index < solution.length; index++)
-            if (solution[index] == 1)
-                indecies.add(index);
-
+        for (int index = 0; index < solution.length; index++) {
+            if (solution[index] == 1) {
+                indecies.add(index); 
+            }
+        }
         double[][] mat = new double[matrix.length][indecies.size() - 1];
-        for (int r = 0; r < mat.length; r++)
-            for (int c = 0; c < mat[0].length; c++)
-                mat[r][c] = matrix[r][indecies.get(c)];
-
+        for (int r = 0; r < mat.length; r++) {
+            for (int c = 0; c < mat[0].length; c++) {
+                mat[r][c] = matrix[r][indecies.get(c)]; 
+            }
+        }
         return switch (correlation_id) {
             case PearsonsCorrelation -> new PearsonsCorrelation().computeCorrelationMatrix(mat).getNorm() / mat[0].length;
             case SpearmansCorrelation -> new SpearmansCorrelation().computeCorrelationMatrix(mat).getNorm() / mat[0].length;

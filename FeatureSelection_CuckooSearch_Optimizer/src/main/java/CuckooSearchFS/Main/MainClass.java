@@ -23,7 +23,7 @@ import java.nio.file.Paths;
 public class MainClass {
     public static void main(String... args) throws IOException {
         // read the data
-        var dataPath = "D:\\Mohammeds\\Mohammeds Work\\my master projects\\CS thesis\\datasets\\data sets\\sonar dataset\\sonar.csv";
+        var dataPath = "...";
         var data = new CSVLoader<>(new LabelFactory()).loadDataSource(Paths.get(dataPath), "Class");
         var dataSet = new MutableDataset<>(data);
 

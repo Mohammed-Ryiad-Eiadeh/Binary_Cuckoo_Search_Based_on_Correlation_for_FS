@@ -1,14 +1,16 @@
-package CuckooSearchFS.Main;
+package org.tribuo.classification.fs.wrapper.Main;
 
-import CuckooSearchFS.Discreeting.TransferFunction;
-import CuckooSearchFS.Evaluation.Correlation_Id;
-import CuckooSearchFS.Optimizers.CuckooSearchOptimizer;
 import org.tribuo.MutableDataset;
 import org.tribuo.Trainer;
 import org.tribuo.classification.LabelFactory;
 import org.tribuo.classification.evaluation.LabelEvaluator;
+import org.tribuo.classification.fs.wrapper.Discreeting.TransferFunction;
+import org.tribuo.classification.fs.wrapper.Evaluation.FitnessFunction;
+import org.tribuo.classification.fs.wrapper.Optimizers.CuckooSearchOptimizer;
 import org.tribuo.classification.sgd.fm.FMClassificationTrainer;
+import org.tribuo.classification.sgd.linear.LinearSGDTrainer;
 import org.tribuo.classification.sgd.objectives.Hinge;
+import org.tribuo.classification.sgd.objectives.LogMulticlass;
 import org.tribuo.data.csv.CSVLoader;
 import org.tribuo.dataset.SelectedFeatureDataset;
 import org.tribuo.evaluation.CrossValidation;
@@ -21,20 +23,26 @@ import java.nio.file.Paths;
 public class MainClass {
     public static void main(String... args) throws IOException {
         // read the data
-        var dataPath = "...";
+        var dataPath = "D:\\Mohammeds\\Mohammeds Work\\my master projects\\CS thesis\\datasets\\data sets\\sonar dataset\\sonar.csv";
         var data = new CSVLoader<>(new LabelFactory()).loadDataSource(Paths.get(dataPath), "Class");
         var dataSet = new MutableDataset<>(data);
 
-        // use the feature selection optimizer
-        var optimizer = new CuckooSearchOptimizer(dataPath,
-                Correlation_Id.SpearmansCorrelation,
-                TransferFunction.V2,
-                4,
-                2,
-                2,
-                0.1,
-                1.5,
+        // use the feature selection optimizer based on the given learner
+        var learner = new LinearSGDTrainer(new LogMulticlass(),
+                new AdaGrad(0.1f, 0.6f),
                 100,
+                Trainer.DEFAULT_SEED);
+
+        var optimizer = new CuckooSearchOptimizer(dataPath,
+                learner,
+                FitnessFunction.Correlation_Id.PearsonsCorrelation,
+                TransferFunction.V2,
+                20,
+                1.5d,
+                2.5d,
+                0.2d,
+                1.5d,
+                2,
                 12345);
 
         var sDate = System.currentTimeMillis();

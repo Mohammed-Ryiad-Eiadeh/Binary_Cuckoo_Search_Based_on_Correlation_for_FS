@@ -1,18 +1,31 @@
-package CuckooSearchFS.Optimizers;
+package org.tribuo.classification.fs.wrapper.Optimizers;
 
-import CuckooSearchFS.Discreeting.TransferFunction;
-import CuckooSearchFS.Evaluation.Correlation_Id;
-import CuckooSearchFS.Evaluation.FitnessFunction;
 import org.tribuo.*;
 import org.tribuo.classification.Label;
+import org.tribuo.classification.ensemble.VotingCombiner;
+import org.tribuo.classification.fs.wrapper.Discreeting.TransferFunction;
+import org.tribuo.classification.fs.wrapper.Evaluation.FitnessFunction;
+import org.tribuo.common.nearest.KNNModel;
+import org.tribuo.common.nearest.KNNTrainer;
+import org.tribuo.math.distance.L1Distance;
+import org.tribuo.math.neighbour.NeighboursQueryFactoryType;
 import org.tribuo.provenance.FeatureSelectorProvenance;
 import org.tribuo.provenance.impl.FeatureSelectorProvenanceImpl;
 
 import java.util.*;
-import java.util.stream.IntStream;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * The main class of CS optimizer
+ * Select features based on Cuckoo Search algorithm with binary transfer functions, KNN classifier and 10-fold cross validation
+ * <p>
+ * see:
+ * <pre>
+ * Xin-She Yang and Suash Deb.
+ * "Cuckoo Search via L´evy Flights", 2010.
+ *
+ * L. A. M. Pereira et al.
+ * "A Binary Cuckoo Search and its Application for Feature Selection", 2014.
+ * </pre>
  */
 public  final class CuckooSearchOptimizer implements FeatureSelector<Label> {
     private final TransferFunction transferFunction;
@@ -23,7 +36,6 @@ public  final class CuckooSearchOptimizer implements FeatureSelector<Label> {
     private final int populationSize;
     private int [][] setOfSolutions;
     private final FitnessFunction FN;
-    private Correlation_Id correlation_id;
     private final int maxIteration;
     private final SplittableRandom rng;
     private final int seed;
@@ -34,7 +46,8 @@ public  final class CuckooSearchOptimizer implements FeatureSelector<Label> {
     public CuckooSearchOptimizer() {
         this.transferFunction = TransferFunction.V2;
         this.populationSize = 50;
-        FN = new FitnessFunction();
+        KNNTrainer<Label> KnnTrainer =  new KNNTrainer<>(1, new L1Distance(), Runtime.getRuntime().availableProcessors(), new VotingCombiner(), KNNModel.Backend.THREADPOOL, NeighboursQueryFactoryType.BRUTE_FORCE);
+        FN = new FitnessFunction(KnnTrainer);
         this.stepSizeScaling = 2d;
         this.lambda = 2d;
         this.worstNestProbability = 0.1d;
@@ -46,15 +59,16 @@ public  final class CuckooSearchOptimizer implements FeatureSelector<Label> {
 
     /**
      * Constructs the wrapper feature selection based on cuckoo search algorithm
+     * @param trainer The used trainer in the evaluation process
      * @param transferFunction The transfer function to convert continuous values to binary ones
      * @param populationSize The size of the solution in the initial population
      * @param maxIteration The number of times that is used to enhance generation
      * @param seed This seed is required for the SplittableRandom
      */
-    public CuckooSearchOptimizer(TransferFunction transferFunction, int populationSize, int maxIteration, int seed) {
+    public CuckooSearchOptimizer(Trainer<Label> trainer, TransferFunction transferFunction, int populationSize, int maxIteration, int seed) {
         this.transferFunction = transferFunction;
         this.populationSize = populationSize;
-        FN = new FitnessFunction();
+        FN = new FitnessFunction(trainer);
         this.stepSizeScaling = 2d;
         this.lambda = 2d;
         this.worstNestProbability = 1.5d;
@@ -66,6 +80,7 @@ public  final class CuckooSearchOptimizer implements FeatureSelector<Label> {
 
     /**
      * Constructs the wrapper feature selection based on cuckoo search algorithm
+     * @param trainer The used trainer in the evaluation process
      * @param transferFunction The transfer function to convert continuous values to binary ones
      * @param populationSize The size of the solution in the initial population
      * @param stepSizeScaling The cuckoo step size
@@ -75,10 +90,10 @@ public  final class CuckooSearchOptimizer implements FeatureSelector<Label> {
      * @param maxIteration The number of times that is used to enhance generation
      * @param seed This seed is required for the SplittableRandom
      */
-    public CuckooSearchOptimizer(TransferFunction transferFunction, int populationSize, double stepSizeScaling, double lambda, double worstNestProbability, double delta, int maxIteration, int seed) {
+    public CuckooSearchOptimizer(Trainer<Label> trainer, TransferFunction transferFunction, int populationSize, double stepSizeScaling, double lambda, double worstNestProbability, double delta, int maxIteration, int seed) {
         this.transferFunction = transferFunction;
         this.populationSize = populationSize;
-        FN = new FitnessFunction();
+        FN = new FitnessFunction(trainer);
         this.stepSizeScaling = stepSizeScaling;
         this.lambda = lambda;
         this.worstNestProbability = worstNestProbability;
@@ -91,6 +106,8 @@ public  final class CuckooSearchOptimizer implements FeatureSelector<Label> {
     /**
      * Constructs the wrapper feature selection based on cuckoo search algorithm
      * @param dataPath The path of the dataset
+     * @param trainer The used trainer in the evaluation process
+     * @param correlation_id The used correlation function in the evaluation process
      * @param transferFunction The transfer function to convert continuous values to binary ones
      * @param populationSize The size of the solution in the initial population
      * @param stepSizeScaling The cuckoo step size
@@ -100,11 +117,10 @@ public  final class CuckooSearchOptimizer implements FeatureSelector<Label> {
      * @param maxIteration The number of times that is used to enhance generation
      * @param seed This seed is required for the SplittableRandom
      */
-    public CuckooSearchOptimizer(String dataPath, Correlation_Id correlation_id, TransferFunction transferFunction, int populationSize, double stepSizeScaling, double lambda, double worstNestProbability, double delta, int maxIteration, int seed) {
+    public CuckooSearchOptimizer(String dataPath, Trainer<Label> trainer, FitnessFunction.Correlation_Id correlation_id, TransferFunction transferFunction, int populationSize, double stepSizeScaling, double lambda, double worstNestProbability, double delta, int maxIteration, int seed) {
         this.transferFunction = transferFunction;
         this.populationSize = populationSize;
-        this.correlation_id = correlation_id;
-        FN = new FitnessFunction();
+        FN = new FitnessFunction(dataPath, trainer, correlation_id);
         this.stepSizeScaling = stepSizeScaling;
         this.lambda = lambda;
         this.worstNestProbability = worstNestProbability;
@@ -153,21 +169,22 @@ public  final class CuckooSearchOptimizer implements FeatureSelector<Label> {
         List<CuckooSearchFeatureSet> subSet_fScores = new ArrayList<>();
         SelectedFeatureSet selectedFeatureSet = null;
         for (int i = 0; i < maxIteration; i++) {
-            IntStream.range(0, setOfSolutions.length).parallel().forEach(subSet -> {
+            for (int solution = 0; solution < setOfSolutions.length; solution++) {
+                AtomicInteger subSet = new AtomicInteger(solution);
                 // Update the solution based on the levy flight function
-                int[] evolvedSolution = Arrays.stream(setOfSolutions[subSet]).map(x -> (int) transferFunction.applyAsDouble(x + stepSizeScaling * Math.pow(subSet + 1, -lambda))).toArray();
+                int[] evolvedSolution = Arrays.stream(setOfSolutions[subSet.get()]).map(x -> (int) transferFunction.applyAsDouble(x + stepSizeScaling * Math.pow(subSet.get() + 1, -lambda))).toArray();
                 int[] randomCuckoo = setOfSolutions[rng.nextInt(setOfSolutions.length)];
                 keepBestAfterEvaluation(dataset, FMap, evolvedSolution, randomCuckoo);
                 // Update the solution based on the abandone nest function
                 if (new Random().nextDouble() < worstNestProbability) {
                     int r1 = rng.nextInt(setOfSolutions.length);
                     int r2 = rng.nextInt(setOfSolutions.length);
-                    for (int j = 0; j < setOfSolutions[subSet].length; j++) {
-                        evolvedSolution[j] = (int) transferFunction.applyAsDouble(setOfSolutions[subSet][j] + delta * (setOfSolutions[r1][j] - setOfSolutions[r2][j])); 
+                    for (int j = 0; j < setOfSolutions[subSet.get()].length; j++) {
+                        evolvedSolution[j] = (int) transferFunction.applyAsDouble(setOfSolutions[subSet.get()][j] + delta * (setOfSolutions[r1][j] - setOfSolutions[r2][j]));
                     }
-                   keepBestAfterEvaluation(dataset, FMap, evolvedSolution, setOfSolutions[subSet]);
+                    keepBestAfterEvaluation(dataset, FMap, evolvedSolution, setOfSolutions[subSet.get()]);
                     }
-            });
+            }
             Arrays.stream(setOfSolutions).map(subSet -> new CuckooSearchFeatureSet(subSet, FN.EvaluateSolution(this, dataset, FMap, subSet))).forEach(subSet_fScores::add);
             subSet_fScores.sort(Comparator.comparing(CuckooSearchFeatureSet::score).reversed());
             selectedFeatureSet = FN.getSFS(this, dataset, FMap, subSet_fScores.get(0).subSet);

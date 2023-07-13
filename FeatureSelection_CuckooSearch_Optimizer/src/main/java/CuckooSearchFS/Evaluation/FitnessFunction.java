@@ -111,7 +111,7 @@ public class FitnessFunction {
             }
 
             matrix = new double[listOfRows.size()][listOfRows.get(0).split(",").length - 1];
-            for (int i = 0; i < listOfRows.size() - 1; i++) {
+            for (int i = 0; i < listOfRows.size(); i++) {
                 String[] breakLine = listOfRows.get(i).split(",");
                 for (int ii = 0; ii < breakLine.length - 1; ii++) {
                     matrix[i][ii] = Double.parseDouble(breakLine[ii]);

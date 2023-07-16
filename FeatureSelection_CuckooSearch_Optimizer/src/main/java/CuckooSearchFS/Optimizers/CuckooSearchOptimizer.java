@@ -165,10 +165,10 @@ public  final class CuckooSearchOptimizer implements FeatureSelector<Label> {
     @Override
     public SelectedFeatureSet select(Dataset<Label> dataset) {
         ImmutableFeatureMap FMap = new ImmutableFeatureMap(dataset.getFeatureMap());
-        setOfSolutions = GeneratePopulation(dataset.getFeatureMap().size());
+        setOfSolutions = generatePopulation(FMap.size());
         List<CuckooSearchFeatureSet> subSet_fScores = new ArrayList<>();
-        SelectedFeatureSet selectedFeatureSet = null;
-        for (int i = 0; i < maxIteration; i++) {
+        SelectedFeatureSet selectedFeatureSet;
+        for (int iter = 0; iter < maxIteration; iter++) {
             for (int solution = 0; solution < setOfSolutions.length; solution++) {
                 AtomicInteger subSet = new AtomicInteger(solution);
                 // Update the solution based on the levy flight function
@@ -183,12 +183,12 @@ public  final class CuckooSearchOptimizer implements FeatureSelector<Label> {
                         evolvedSolution[j] = (int) transferFunction.applyAsDouble(setOfSolutions[subSet.get()][j] + delta * (setOfSolutions[r1][j] - setOfSolutions[r2][j]));
                     }
                     keepBestAfterEvaluation(dataset, FMap, evolvedSolution, setOfSolutions[subSet.get()]);
-                    }
+                }
             }
             Arrays.stream(setOfSolutions).map(subSet -> new CuckooSearchFeatureSet(subSet, FN.EvaluateSolution(this, dataset, FMap, subSet))).forEach(subSet_fScores::add);
-            subSet_fScores.sort(Comparator.comparing(CuckooSearchFeatureSet::score).reversed());
-            selectedFeatureSet = FN.getSFS(this, dataset, FMap, subSet_fScores.get(0).subSet);
         }
+        subSet_fScores.sort(Comparator.comparing(CuckooSearchFeatureSet::score).reversed());
+        selectedFeatureSet = FN.getSFS(this, dataset, FMap, subSet_fScores.get(0).subSet);
         return selectedFeatureSet;
     }
 

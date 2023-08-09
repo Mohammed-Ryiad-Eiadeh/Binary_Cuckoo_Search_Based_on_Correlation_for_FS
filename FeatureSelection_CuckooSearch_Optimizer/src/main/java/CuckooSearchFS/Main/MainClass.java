@@ -27,14 +27,8 @@ public class MainClass {
         var data = new CSVLoader<>(new LabelFactory()).loadDataSource(Paths.get(dataPath), "Class");
         var dataSet = new MutableDataset<>(data);
 
-        // use the feature selection optimizer based on the given learner
-        var learner = new LinearSGDTrainer(new LogMulticlass(),
-                new AdaGrad(0.1f, 0.6f),
-                100,
-                Trainer.DEFAULT_SEED);
-
+        // use the feature selection optimizer
         var optimizer = new CuckooSearchOptimizer(dataPath,
-                learner,
                 FitnessFunction.Correlation_Id.PearsonsCorrelation,
                 TransferFunction.V2,
                 20,
@@ -42,9 +36,10 @@ public class MainClass {
                 2.5d,
                 0.2d,
                 1.5d,
-                2,
+                0.5,
+                25,
                 12345);
-
+        
         var sDate = System.currentTimeMillis();
         var SFS = optimizer.select(dataSet);
         var eDate = System.currentTimeMillis();
@@ -59,19 +54,36 @@ public class MainClass {
                 0.2D);
 
         // use crossvalidation
-        var crossValidation = new CrossValidation<>(FMTrainer, SFDS, new LabelEvaluator(), 2);
+        var crossValidation = new CrossValidation<>(FMTrainer, SFDS, new LabelEvaluator(), 10, Trainer.DEFAULT_SEED);
 
         // get outputs
-        var avgAcc = 0D;
+        var avgAcc = 0d;
+        var sensitivity = 0d;
+        var macroAveragedF1 = 0d;
         var sTrain = System.currentTimeMillis();
-        for (var acc: crossValidation.evaluate())
+        for (var acc: crossValidation.evaluate()) {
             avgAcc += acc.getA().accuracy();
+            sensitivity += acc.getA().tp() / (acc.getA().tp() + acc.getA().fn());
+            macroAveragedF1 += acc.getA().macroAveragedF1();
+        }
         var eTrain = System.currentTimeMillis();
 
         System.out.printf("The FS duration time is : %s\nThe number of selected features is : %d\nThe feature names are : %s\n",
                 Util.formatDuration(sDate, eDate), SFS.featureNames().size(), SFS.featureNames());
-
         System.out.println("The Training_Testing duration time is : " + Util.formatDuration(sTrain, eTrain));
         System.out.println("The average accuracy is : " + (avgAcc / crossValidation.getK()));
+        System.out.println("The average sensitivity is : " + (sensitivity / crossValidation.getK()));
+        System.out.println("The average macroAveragedF1 is : " + (macroAveragedF1 / crossValidation.getK()));
+        System.out.println("The average fitness scores are : ");
+        Arrays.stream(optimizer.getAvgFitness()).forEach(i -> System.out.print(i + ", "));
+        System.out.println("\b\b");
+        // store the resulted set of features
+        System.out.println("Please Type Y to save the new set of features or N to ignore that");
+        Scanner inputs = new Scanner(System.in);
+        if (inputs.nextLine().equals("Y")) {
+            System.out.println("Type the file name please");
+            String dataName = inputs.nextLine();
+            new CSVSaver().save(Paths.get("...\\" + dataName + ".csv"), SFDS, "Class");
+        }
     }
 }

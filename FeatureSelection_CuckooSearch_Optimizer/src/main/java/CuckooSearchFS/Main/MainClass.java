@@ -74,9 +74,6 @@ public class MainClass {
         System.out.println("The average accuracy is : " + (avgAcc / crossValidation.getK()));
         System.out.println("The average sensitivity is : " + (sensitivity / crossValidation.getK()));
         System.out.println("The average macroAveragedF1 is : " + (macroAveragedF1 / crossValidation.getK()));
-        System.out.println("The average fitness scores are : ");
-        Arrays.stream(optimizer.getAvgFitness()).forEach(i -> System.out.print(i + ", "));
-        System.out.println("\b\b");
         // store the resulted set of features
         System.out.println("Please Type Y to save the new set of features or N to ignore that");
         Scanner inputs = new Scanner(System.in);

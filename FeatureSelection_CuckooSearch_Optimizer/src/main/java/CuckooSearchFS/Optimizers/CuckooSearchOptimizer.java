@@ -170,22 +170,21 @@ public  final class CuckooSearchOptimizer implements FeatureSelector<Label> {
         SelectedFeatureSet selectedFeatureSet;
         for (int iter = 0; iter < maxIteration; iter++) {
             for (int solution = 0; solution < setOfSolutions.length; solution++) {
-                AtomicInteger subSet = new AtomicInteger(solution);
                 int[] evolvedSolution = new int[setOfSolutions[0].length];
-                // Update the solution based on the levy flight function
+                // Update the solution based on the levy flight function 0.5 + 0.8 * (new Random().nextGaussian() / Math.pow(Math.abs(new Random().nextGaussian()), 1.0 / 3.0))
                 for (int i = 0; i < setOfSolutions[0].length; i++) {
-                    evolvedSolution[i] = (int) transferFunction.applyAsDouble(setOfSolutions[subSet.get()][i] + stepSizeScaling * Math.pow(subSet.get() + 1, -lambda));
+                    evolvedSolution[i] = (int) transferFunction.applyAsDouble(setOfSolutions[solution][i] + stepSizeScaling * Math.pow(solution + 1, -lambda));
                 }
-                int[] randomCuckoo = setOfSolutions[rng.nextInt(setOfSolutions.length)];
-                setOfSolutions[subSet.get()] = keepBestAfterEvaluation(dataset, FMap, evolvedSolution, randomCuckoo);
+                int randomCuckooIndex = rng.nextInt(setOfSolutions.length);
+                System.arraycopy(retrieveBestAfterEvaluation(dataset, FMap, evolvedSolution, setOfSolutions[randomCuckooIndex]), 0, setOfSolutions[randomCuckooIndex], 0, setOfSolutions[randomCuckooIndex].length);
                 // Update the solution based on the abandone nest function
                 if (new Random().nextDouble() < worstNestProbability) {
                     int r1 = rng.nextInt(setOfSolutions.length);
                     int r2 = rng.nextInt(setOfSolutions.length);
                     for (int j = 0; j < setOfSolutions[0].length; j++) {
-                        evolvedSolution[j] = (int) transferFunction.applyAsDouble(setOfSolutions[subSet.get()][j] + delta * (setOfSolutions[r1][j] - setOfSolutions[r2][j]));
+                        evolvedSolution[j] = (int) transferFunction.applyAsDouble(setOfSolutions[solution][j] + delta * (setOfSolutions[r1][j] - setOfSolutions[r2][j]));
                     }
-                    setOfSolutions[subSet.get()] = keepBestAfterEvaluation(dataset, FMap, evolvedSolution, setOfSolutions[subSet.get()]);
+                    System.arraycopy(retrieveBestAfterEvaluation(dataset, FMap, evolvedSolution, setOfSolutions[solution]), 0, setOfSolutions[solution], 0, setOfSolutions[solution].length);
                 }
             }
             Arrays.stream(setOfSolutions).map(subSet -> new CuckooSearchFeatureSet(subSet, FN.EvaluateSolution(this, dataset, FMap, subSet))).forEach(subSet_fScores::add);
@@ -206,7 +205,7 @@ public  final class CuckooSearchOptimizer implements FeatureSelector<Label> {
      * @param alteredSolution The modified solution
      * @param oldSolution The old solution
      */
-    public int[] keepBestAfterEvaluation(Dataset<Label> dataset, ImmutableFeatureMap FMap, int[] alteredSolution, int... oldSolution) {
+    public int[] retrieveBestAfterEvaluation(Dataset<Label> dataset, ImmutableFeatureMap FMap, int[] alteredSolution, int... oldSolution) {
         if (FN.EvaluateSolution(this, dataset, FMap, alteredSolution) > FN.EvaluateSolution(this, dataset, FMap, oldSolution)) {
             return alteredSolution;
         }

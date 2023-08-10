@@ -46,7 +46,7 @@ public class MainClass {
         var SFDS = new SelectedFeatureDataset<>(dataSet, SFS);
 
         // use KNN classifier
-        var KnnTrainer =  new KNNTrainer<>(3,
+        var KnnTrainer =  new KNNTrainer<>(1,
                 new L1Distance(),
                 Runtime.getRuntime().availableProcessors(),
                 new VotingCombiner(),

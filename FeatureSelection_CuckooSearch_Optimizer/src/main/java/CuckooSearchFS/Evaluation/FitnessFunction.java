@@ -70,7 +70,6 @@ public class FitnessFunction {
         if (matrix != null) {
             correlation = getCorrelation(correlation_id, solution);
         }
-
         return avgAccuracy + 0.001 * (1 - ((double) selectedFeatureDataset.getSelectedFeatures().size() / Fmap.size()) - correlation);
     }
 
@@ -92,7 +91,6 @@ public class FitnessFunction {
             }
         }
         FeatureSetProvenance provenance = new FeatureSetProvenance(SelectedFeatureSet.class.getName(), dataset.getProvenance(), optimizer.getProvenance());
-
         return new SelectedFeatureSet(names, scores, optimizer.isOrdered(), provenance);
     }
 
@@ -135,14 +133,12 @@ public class FitnessFunction {
             if (solution[index] == 1)
                 indecies.add(index);
         }
-
         double[][] mat = new double[matrix.length][indecies.size() - 1];
         for (int r = 0; r < mat.length; r++) {
             for (int c = 0; c < mat[0].length; c++) {
                 mat[r][c] = matrix[r][indecies.get(c)];
             }
         }
-
         return switch (correlation_id) {
             case PearsonsCorrelation -> new PearsonsCorrelation().computeCorrelationMatrix(mat).getNorm() / mat[0].length;
             case SpearmansCorrelation -> new SpearmansCorrelation().computeCorrelationMatrix(mat).getNorm() / mat[0].length;

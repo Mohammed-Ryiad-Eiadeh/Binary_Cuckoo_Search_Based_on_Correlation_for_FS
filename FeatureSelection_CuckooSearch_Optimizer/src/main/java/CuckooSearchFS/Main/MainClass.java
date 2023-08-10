@@ -45,16 +45,17 @@ public class MainClass {
         var eDate = System.currentTimeMillis();
         var SFDS = new SelectedFeatureDataset<>(dataSet, SFS);
 
-        // use FM classifier
-        var FMTrainer = new FMClassificationTrainer(new Hinge(),
-                new AdaGrad(0.1, 0.8),
-                100,
-                Trainer.DEFAULT_SEED,
-                10,
-                0.2D);
+        // use KNN classifier
+        var KnnTrainer =  new KNNTrainer<>(3,
+                new L1Distance(),
+                Runtime.getRuntime().availableProcessors(),
+                new VotingCombiner(),
+                KNNModel.Backend.THREADPOOL,
+                NeighboursQueryFactoryType.BRUTE_FORCE);
 
         // use crossvalidation
-        var crossValidation = new CrossValidation<>(FMTrainer, SFDS, new LabelEvaluator(), 10, Trainer.DEFAULT_SEED);
+        // noinspection DuplicatedCode
+        var crossValidation = new CrossValidation<>(KnnTrainer, SFDS, new LabelEvaluator(), 10, Trainer.DEFAULT_SEED);
 
         // get outputs
         var avgAcc = 0d;

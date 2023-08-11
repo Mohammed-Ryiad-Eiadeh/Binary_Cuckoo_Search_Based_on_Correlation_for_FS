@@ -69,12 +69,13 @@ public class MainClass {
         }
         var eTrain = System.currentTimeMillis();
 
-        System.out.printf("The FS duration time is : %s\nThe number of selected features is : %d\nThe feature names are : %s\n",
-                Util.formatDuration(sDate, eDate), SFS.featureNames().size(), SFS.featureNames());
-        System.out.println("The Training_Testing duration time is : " + Util.formatDuration(sTrain, eTrain));
-        System.out.println("The average accuracy is : " + (avgAcc / crossValidation.getK()));
-        System.out.println("The average sensitivity is : " + (sensitivity / crossValidation.getK()));
-        System.out.println("The average macroAveragedF1 is : " + (macroAveragedF1 / crossValidation.getK()));
+       for (var stuff : List.of("The FS duration time is : %s\nThe number of selected features is : %d\nThe feature names are : %s\n",
+                Util.formatDuration(sDate, eDate), SFS.featureNames().size(), SFS.featureNames(),
+                "The Training_Testing duration time is : " + Util.formatDuration(sTrain, eTrain),
+                "The average accuracy is : " + (avgAcc / crossValidation.getK()),
+                "The average sensitivity is : " + (sensitivity / crossValidation.getK()),
+                "The average macroAveragedF1 is : " + (macroAveragedF1 / crossValidation.getK())))
+            System.out.println(stuff);
         // store the resulted set of features
         System.out.println("Please Type Y to save the new set of features or N to ignore that");
         Scanner inputs = new Scanner(System.in);

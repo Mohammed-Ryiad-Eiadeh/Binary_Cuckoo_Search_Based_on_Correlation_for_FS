@@ -79,10 +79,10 @@ public class MainClass {
         }
         // store the resulted set of features
         System.out.println("Please Type Y to save the new set of features or N to ignore that");
-        Scanner inputs = new Scanner(System.in);
+        var inputs = new Scanner(System.in);
         if (inputs.nextLine().equals("Y")) {
-           var saveToThisPath = "...\\";
-            String dataName = inputs.nextLine();
+            var saveToThisPath = "...\\";
+            var dataName = inputs.nextLine();
             new CSVSaver().save(Paths.get( saveToThisPath+ dataName + ".csv"), SFDS, "Class");
         }
     }

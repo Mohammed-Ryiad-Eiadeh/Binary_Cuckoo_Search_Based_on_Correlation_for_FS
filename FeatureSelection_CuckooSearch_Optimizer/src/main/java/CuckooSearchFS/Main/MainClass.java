@@ -69,9 +69,9 @@ public class MainClass {
         }
         var eTrain = System.currentTimeMillis();
 
-       for (var stuff : List.of("The FS duration time is : %s\nThe number of selected features is : %d\nThe feature names are : %s\n",
-                Util.formatDuration(sDate, eDate), SFS.featureNames().size(), SFS.featureNames(),
-                "The Training_Testing duration time is : " + Util.formatDuration(sTrain, eTrain),
+       System.out.printf("The FS duration time is : %s\nThe number of selected features is : %d\nThe feature names are : %s\n",
+                Util.formatDuration(sDate, eDate), SFS.featureNames().size(), SFS.featureNames());
+        for (var stuff : List.of("The Training_Testing duration time is : " + Util.formatDuration(sTrain, eTrain),
                 "The average accuracy is : " + (avgAcc / crossValidation.getK()),
                 "The average sensitivity is : " + (sensitivity / crossValidation.getK()),
                 "The average macroAveragedF1 is : " + (macroAveragedF1 / crossValidation.getK()))) {

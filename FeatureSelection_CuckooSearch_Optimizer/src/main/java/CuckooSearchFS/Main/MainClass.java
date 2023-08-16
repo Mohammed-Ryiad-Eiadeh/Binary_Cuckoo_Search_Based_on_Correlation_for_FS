@@ -83,7 +83,7 @@ public class MainClass {
         if (inputs.nextLine().equals("Y")) {
             var saveToThisPath = "...\\";
             var dataName = inputs.nextLine();
-            new CSVSaver().save(Paths.get( saveToThisPath+ dataName + ".csv"), SFDS, "Class");
+            new CSVSaver().save(Paths.get( saveToThisPath + dataName + ".csv"), SFDS, "Class");
         }
     }
 }

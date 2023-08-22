@@ -107,7 +107,6 @@ public class FitnessFunction {
             while (originalData.hasNext()) {
                 listOfRows.add(originalData.nextLine());
             }
-
             matrix = new double[listOfRows.size()][listOfRows.get(0).split(",").length - 1];
             for (int i = 0; i < listOfRows.size(); i++) {
                 String[] breakLine = listOfRows.get(i).split(",");

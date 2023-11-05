@@ -22,7 +22,7 @@ import java.util.Map;
 public class MainClass {
     public static void main(String... args) throws IOException {
         // read the data
-        var dataPath = System.getProperty("user.dir") + "\\divorce.csv";
+        var dataPath = "...";  // the path of your dataset
         var data = new CSVLoader<>(new LabelFactory()).loadDataSource(Paths.get(dataPath), "Class");
         var dataSet = new MutableDataset<>(data);
 
@@ -48,7 +48,7 @@ public class MainClass {
                 SFDS.getOutputs().size());
 
         var opt = GradientOptimiser.GRADIENT_DESCENT;
-        var optParameters = Map.of("learningRate",0.1f);
+        var optParameters = Map.of("learningRate", 0.1f);
 
         var featureConverter = new DenseFeatureConverter(NN.inputName);
         var outputConverter = new LabelConverter();

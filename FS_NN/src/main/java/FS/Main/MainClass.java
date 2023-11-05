@@ -79,6 +79,8 @@ public class MainClass {
 
         System.out.println("The Training_Testing duration time is : " + Util.formatDuration(sTrain, eTrain));
         System.out.println("The average accuracy is : " + (avgAcc / crossValidation.getK()));
+
+        new CSVSaver().save(Path.of("...\\selectedSubSet.csv"), SFDS, "Class");  // the path where to store the resulted subset of features after FS
     }
 }
 

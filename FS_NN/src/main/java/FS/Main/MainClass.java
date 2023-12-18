@@ -20,9 +20,9 @@ import java.nio.file.Paths;
 import java.util.Map;
 
 public class MainClass {
-    public static void main(String... args) throws IOException {
+    public static void main(String[] args) throws IOException {
         // read the data
-        var dataPath = "...";  // the path of your dataset
+        var dataPath = "...\\originalDataSet.csv";  // please type the path of your dataset
         var data = new CSVLoader<>(new LabelFactory()).loadDataSource(Paths.get(dataPath), "Class");
         var dataSet = new MutableDataset<>(data);
 
@@ -42,30 +42,20 @@ public class MainClass {
         var SFDS = new SelectedFeatureDataset<>(dataSet, SFS);
 
         // use FM classifier
-        var NN = MLPExamples.buildMLPGraph("NN",
-                SFDS.getFeatureMap().size(),
-                new int[] {100, 50},
-                SFDS.getOutputs().size());
+        var fmClassifier = new FMClassificationTrainer(new Hinge(),
+                new AdaGrad(0.1, 0.5),
+                50,
+                (int) Trainer.DEFAULT_SEED,
+                10,
+                0.2);
 
-        var opt = GradientOptimiser.GRADIENT_DESCENT;
-        var optParameters = Map.of("learningRate", 0.1f);
-
-        var featureConverter = new DenseFeatureConverter(NN.inputName);
-        var outputConverter = new LabelConverter();
-
-        var TF_NN = new TensorFlowTrainer<>(NN.graphDef,
-                NN.outputName,
-                opt,
-                optParameters,
-                featureConverter,
-                outputConverter,
-                16,
-                30,
-                16,
-                -1);
+        // use EL Bagging with max voting
+        var EL = new BaggingTrainer<>(fmClassifier,
+                new VotingCombiner(),
+                5);
 
         // use crossvalidation
-        var crossValidation = new CrossValidation<>(TF_NN, SFDS, new LabelEvaluator(), 10);
+        var crossValidation = new CrossValidation<>(EL, SFDS, new LabelEvaluator(), 10);
 
         // get outputs
         var avgAcc = 0D;
@@ -80,6 +70,7 @@ public class MainClass {
         System.out.println("The Training_Testing duration time is : " + Util.formatDuration(sTrain, eTrain));
         System.out.println("The average accuracy is : " + (avgAcc / crossValidation.getK()));
 
+        // please set up the path where you want to store the resulted subset or comment it or remove it
         new CSVSaver().save(Path.of("...\\selectedSubSet.csv"), SFDS, "Class");  // the path where to store the resulted subset of features after FS
     }
 }

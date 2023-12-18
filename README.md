@@ -9,5 +9,5 @@ This repositort demonstrates the usage of a wrapper FS approach based on a Cucko
 6) make sure you are connected to the internet
 7) wait while the IDEA download all the libraries that are included as dependencies in the pom XML file
 8) go to the main
-9) firstly run the file "MainForGeneratingData" to generte the data
-10) run the other classes for the experiments
+9) firstly type the path of your CSV file
+10) run the main class

@@ -218,7 +218,7 @@ public  final class CuckooSearchOptimizer implements FeatureSelector<Label> {
      * @param solution The current subset of features
      * @return The fitness score of the given subset
      */
-    private  <T extends FeatureSelector<Label>> double evaluateSolution(T optimizer, Trainer<Label> trainer, Dataset<Label> dataset, ImmutableFeatureMap Fmap, int... solution) {
+    private  <T extends FeatureSelector<Label>> double evaluateSolution(T optimizer, Trainer<Label> trainer, Dataset<Label> dataset, ImmutableFeatureMap Fmap, int[] solution) {
         SelectedFeatureDataset<Label> selectedFeatureDataset = new SelectedFeatureDataset<>(dataset,getSFS(optimizer, dataset, Fmap, solution));
         CrossValidation<Label, LabelEvaluation> crossValidation = new CrossValidation<>(trainer, selectedFeatureDataset, new LabelEvaluator(), 10);
         double avgAccuracy = 0d;
@@ -238,7 +238,7 @@ public  final class CuckooSearchOptimizer implements FeatureSelector<Label> {
      * @param solution The current subset of featurs
      * @return The selected feature set
      */
-    private  <T extends FeatureSelector<Label>> SelectedFeatureSet getSFS(T optimizer, Dataset<Label> dataset, ImmutableFeatureMap featureMap, int... solution) {
+    private  <T extends FeatureSelector<Label>> SelectedFeatureSet getSFS(T optimizer, Dataset<Label> dataset, ImmutableFeatureMap featureMap, int[] solution) {
         List<String> names = new ArrayList<>();
         List<Double> scores = new ArrayList<>();
         for (int i = 0; i < solution.length; i++) {

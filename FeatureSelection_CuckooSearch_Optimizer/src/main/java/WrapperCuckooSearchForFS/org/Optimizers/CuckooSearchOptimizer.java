@@ -44,7 +44,6 @@ public  final class CuckooSearchOptimizer implements FeatureSelector<Label> {
 
     /**
      * The default constructor for feature selection based on Cuckoo Search Algorithm
-     * @param mutationRate
      */
     public CuckooSearchOptimizer() {
         this.transferFunction = TransferFunction.V2;
